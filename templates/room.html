@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="chat-container">
+    <h2 class="room-title">Chat Room: {{code}}</h2>
+    <div id="messages" class="messages">
+        {% for msg in messages %}
+            <div class="message {% if msg.name == session.get('name') %}sent{% else %}received{% endif %}">
+                <span class="sender">{{ msg.name }}</span>
+                <p>{{ msg.message }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="input-area">
+        <input type="text" id="message" placeholder="Type a message..." autocomplete="off">
+        <button id="send-btn">Send</button>
+    </div>
+</div>
+
+<style>
+    body, html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+    .chat-container {
+        width: 100%;
+        height: 100vh;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+    .room-title {
+        text-align: center;
+        color: #333;
+        margin-top: 0;
+    }
+    .messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+        background: linear-gradient(to right, #e5ddd5, #f7f3ef);
+
+
+
+
+
+    }
+    .message {
+        max-width: 70%;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        clear: both;
+        word-wrap: break-word;
+    }
+    .sent {
+        float: right;
+        background-color: gray;
+        
+        margin-left: 30%;
+    }
+    .received {
+        float: left;
+        background-color: #ffffff;
+        margin-right: 30%;
+    }
+    .sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+        font-size: 0.9em;
+    }
+    .input-area {
+        display: flex;
+        padding: 10px 0;
+    }
+    #message {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        margin-right: 10px;
+    }
+    #send-btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    
+    /* Responsive design */
+    @media (min-width: 768px) {
+        .chat-container {
+            width: 90%;
+            max-width: none;
+            height: 90vh;
+            margin: 5vh auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .chat-container {
+            width: 85%;
+        }
+    }
+    
+    @media (min-width: 1440px) {
+        .chat-container {
+            width: 80%;
+            max-width: 1400px;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    socket.on('connect', () => {
+        socket.emit('join_room', {
+            username: "{{ session.get('name') }}",
+            room: "{{ code }}"
+        });
+    });
+
+    socket.on('message', (data) => {
+        const messages = document.getElementById('messages');
+        const messageClass = data.name === "{{ session.get('name') }}" ? 'sent' : 'received';
+        messages.innerHTML += `
+            <div class="message ${messageClass}">
+                <span class="sender">${data.name}</span>
+                <p>${data.message}</p>
+            </div>
+        `;
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    const sendMessage = () => {
+        const message = document.getElementById('message');
+        if (message.value) {
+            socket.emit('message', {data: message.value});
+            message.value = '';
+        }
+    };
+
+    document.getElementById('send-btn').onclick = sendMessage;
+    document.getElementById('message').onkeyup = (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
+</script>
+{% endblock %}
