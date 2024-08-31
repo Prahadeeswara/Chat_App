@@ -2,9 +2,12 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
+import os
+import secrets
 
+print(secrets.token_hex(16))
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "hjhjsdahhds"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback_secret_key")
 socketio = SocketIO(app)
 
 rooms = {}
