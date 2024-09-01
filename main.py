@@ -5,7 +5,7 @@ from string import ascii_uppercase
 import os
 import secrets
 
-print(secrets.token_hex(16))
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback_secret_key")
 socketio = SocketIO(app)
@@ -104,5 +104,4 @@ def disconnect():
     print(f"{name} has left the room {room}")
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", debug=True)
-
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
