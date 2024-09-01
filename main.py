@@ -1,14 +1,15 @@
+from gevent import monkey
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
 import os
-import secrets
 
-
+monkey.patch_all()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback_secret_key")
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='gevent')
+
 
 rooms = {}
 
@@ -104,4 +105,4 @@ def disconnect():
     print(f"{name} has left the room {room}")
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app)
